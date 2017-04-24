@@ -13,7 +13,7 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "TAgg";
-    MediaPlayer mediaplayer;
+    MediaPlayer mediaplayer = new MediaPlayer();
     Player videoView;
     Button btnMute, btnUnmute;
     MediaController myMediaController;
@@ -30,11 +30,17 @@ public class MainActivity extends AppCompatActivity {
         videoView = (Player) findViewById(R.id.vView);
         btnUnmute = (Button) findViewById(R.id.unMute);
         btnMute = (Button) findViewById(R.id.mute);
-        loadVieo("http://html5demos.com/assets/dizzy.mp4");
+        loadVieo("http://www.html5videoplayer.net/videos/toystory.mp4");
         btnMute.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 videoView.mute();
+            }
+        });
+        btnUnmute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                videoView.unmute();
             }
         });
 
@@ -79,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("LongLogTag")
             @Override
             public void onPrepared(MediaPlayer player) {
+                videoView.setMediaPlayer(player);
                 long duration = videoView.getDuration(); //in millisecond
                 Log.d(TAG + "duration", String.valueOf(duration));
             }

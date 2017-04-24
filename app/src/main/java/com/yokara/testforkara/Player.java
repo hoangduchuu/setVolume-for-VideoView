@@ -2,15 +2,16 @@ package com.yokara.testforkara;
 
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaPlayer.OnErrorListener;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.util.AttributeSet;
 import android.widget.VideoView;
 
-/**
- * Created by zip on 4/23/17.
- */
-
-public class Player extends VideoView implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
+public class Player extends VideoView implements OnPreparedListener,
+        OnCompletionListener, OnErrorListener {
     private MediaPlayer mediaPlayer;
+    private boolean mute = true;
 
     public Player(Context context, AttributeSet attributes) {
         super(context, attributes);
@@ -20,18 +21,44 @@ public class Player extends VideoView implements MediaPlayer.OnPreparedListener,
         this.setOnErrorListener(this);
     }
 
+    public Player(Context context) {
+        super(context);
+    }
+
+    public Player(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+    }
+
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
         this.mediaPlayer = mediaPlayer;
     }
 
+    @Override
+    public boolean onError(MediaPlayer mediaPlayer, int what, int extra) {
+        return false;
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mediaPlayer) {
+    }
+
+    public void setMediaPlayer(MediaPlayer mediaPlayer) {
+        this.mediaPlayer = mediaPlayer;
+    }
 
     public void mute() {
         this.setVolume(0);
+        mute = true;
     }
 
     public void unmute() {
         this.setVolume(100);
+        mute = false;
+    }
+
+    public boolean isMute() {
+        return mute;
     }
 
     private void setVolume(int amount) {
@@ -40,15 +67,5 @@ public class Player extends VideoView implements MediaPlayer.OnPreparedListener,
         final float volume = (float) (1 - (numerator / Math.log(max)));
 
         this.mediaPlayer.setVolume(volume, volume);
-    }
-
-    @Override
-    public void onCompletion(MediaPlayer mp) {
-        this.mediaPlayer = mp;
-    }
-
-    @Override
-    public boolean onError(MediaPlayer mp, int what, int extra) {
-        return false;
     }
 }
