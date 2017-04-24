@@ -26,8 +26,6 @@ public class Player extends VideoView implements MediaPlayer.OnPreparedListener,
     }
 
 
-
-
     public void mute() {
         this.setVolume(0);
     }
@@ -46,7 +44,7 @@ public class Player extends VideoView implements MediaPlayer.OnPreparedListener,
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-
+        this.mediaPlayer = mp;
     }
 
     @Override
