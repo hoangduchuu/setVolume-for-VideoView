@@ -4,11 +4,14 @@ import android.annotation.SuppressLint;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.MediaController;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
@@ -21,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayer.OnPreparedListener onPrepared;
     private MediaPlayer.OnErrorListener onVideoErrors;
     private Uri uri;
+    private SeekBar seekBar;
 
 
     @Override
@@ -30,7 +34,8 @@ public class MainActivity extends AppCompatActivity {
         videoView = (Player) findViewById(R.id.vView);
         btnUnmute = (Button) findViewById(R.id.unMute);
         btnMute = (Button) findViewById(R.id.mute);
-        loadVieo("http://www.html5videoplayer.net/videos/toystory.mp4");
+        seekBar = (SeekBar) findViewById(R.id.seek);
+        loadVieo("http://192.168.1.103/raw/vyvy.mp4");
         btnMute.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -43,7 +48,32 @@ public class MainActivity extends AppCompatActivity {
                 videoView.unmute();
             }
         });
+        setingSeekBar();
 
+    }
+
+    private void setingSeekBar() {
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                Log.d("status,", progress + "");
+                if (fromUser) {
+                    videoView.seekTo(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                Log.d("status,", "start");
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                Log.d("status,", "stop");
+
+            }
+        });
     }
 
     private void loadVieo(String url) {
@@ -85,8 +115,10 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("LongLogTag")
             @Override
             public void onPrepared(MediaPlayer player) {
+                seekBar.setMax(videoView.getDuration());
                 videoView.setMediaPlayer(player);
                 long duration = videoView.getDuration(); //in millisecond
+                seekBar.setMax(videoView.getDuration());
                 Log.d(TAG + "duration", String.valueOf(duration));
             }
         };

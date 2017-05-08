@@ -34,4 +34,12 @@
         android:layout_below="@id/mute"
         android:text="unmute" />
 
+    <SeekBar
+        android:id="@+id/seek"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/unMute"
+        android:backgroundTint="@color/colorPrimary"
+        android:progressDrawable="@color/exo_edit_mode_background_color" />
+
 </RelativeLayout>
