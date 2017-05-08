@@ -5,14 +5,18 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.MediaController;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.crashlytics.android.Crashlytics;
+
+import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "TAgg";
@@ -23,19 +27,30 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayer.OnCompletionListener onComplete;
     private MediaPlayer.OnPreparedListener onPrepared;
     private MediaPlayer.OnErrorListener onVideoErrors;
+    private MediaPlayer.OnBufferingUpdateListener onBuffering;
     private Uri uri;
     private SeekBar seekBar;
+    private Handler handler;
+    private Runnable runnable;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
         videoView = (Player) findViewById(R.id.vView);
         btnUnmute = (Button) findViewById(R.id.unMute);
         btnMute = (Button) findViewById(R.id.mute);
         seekBar = (SeekBar) findViewById(R.id.seek);
-        loadVieo("http://192.168.1.103/raw/vyvy.mp4");
+        loadVieo("http://192.168.1.102/raw/vyvy.mp4");
+        mutesetting();
+        handler = new Handler();
+        setingSeekBar();
+        playCycle();
+    }
+
+    private void mutesetting() {
         btnMute.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -48,11 +63,13 @@ public class MainActivity extends AppCompatActivity {
                 videoView.unmute();
             }
         });
-        setingSeekBar();
 
     }
 
     private void setingSeekBar() {
+        if (videoView.isPlaying()) {
+            Log.d("playing", "playing");
+        }
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -86,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
         myMediaController.setAnchorView(videoView);
         videoView.setVideoURI(uri);
         videoView.resume();
-        videoView.start();
+//        videoView.start();
         videoView.setClickable(true);
         videoView.setOnCompletionListener(onComplete);
         videoView.setOnPreparedListener(onPrepared);
@@ -107,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onCompletion(MediaPlayer player) {
                         Log.d(TAG, "End of Video");
+                        videoView.start();
 
 
                     }
@@ -115,11 +133,16 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("LongLogTag")
             @Override
             public void onPrepared(MediaPlayer player) {
+                long timeStart = videoView.getDuration(); //in millisecond
+                long timeEnd = videoView.getCurrentPosition();
+
+                ((TextView) findViewById(R.id.tvEnd)).setText(MyUtils.convertDuration(timeStart));
                 seekBar.setMax(videoView.getDuration());
                 videoView.setMediaPlayer(player);
-                long duration = videoView.getDuration(); //in millisecond
-                seekBar.setMax(videoView.getDuration());
-                Log.d(TAG + "duration", String.valueOf(duration));
+                videoView.start();
+                Log.d(TAG + "DM- duration", String.valueOf(timeStart));
+                playCycle();
+
             }
         };
         onVideoErrors = new MediaPlayer.OnErrorListener() {
@@ -165,6 +188,52 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         };
+
+
+    }
+
+
+    private void playCycle() {
+        if (videoView.isPlaying()) {
+            runnable = new Runnable() {
+                @Override
+                public void run() {
+
+
+                    playCycle();
+                    seekBar.setProgress(videoView.getCurrentPosition());
+
+                    ((TextView) findViewById(R.id.tvStart)).setText(MyUtils.convertDuration((long) videoView.getCurrentPosition()));
+                    Log.d("playing", "playing " + videoView.getCurrentPosition());
+
+                }
+            };
+            videoView.start();
+            handler.postDelayed(runnable, 1000);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        videoView.stopPlayback();
+        handler.removeCallbacks(runnable);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("lifecycle, resume: ", "resume");
+        playCycle();
+        videoView.start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d("lifecycle, onPause: ", "onPause1");
+        videoView.pause();
+        Log.d("lifecycle, onPause: ", "onPause2");
 
     }
 
