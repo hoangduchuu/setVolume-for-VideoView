@@ -7,7 +7,6 @@ import android.view.View;
  */
 
 public class MyUtils {
-    View view;
 
     // this function return time as string;
     public static String convertDuration(long duration) {
